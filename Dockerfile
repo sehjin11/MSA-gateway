@@ -1,10 +1,14 @@
-FROM node:lts-alpine
-ENV NODE_ENV=production
+FROM node:lts-alpine AS builder
 WORKDIR /usr/src/app
-COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
-RUN npm install --production --silent && mv node_modules ../
 COPY . .
+RUN npm install
+RUN npm run build
+
+FROM node:lts-alpine
+WORKDIR /ADMIN/src/app
+COPY --from=builder /ADMIN/src/app ./
+
 EXPOSE 3001
-RUN chown -R node /usr/src/app
-USER node
-CMD ["npm", "start:dev"]
+
+
+ENTRYPOINT ["npm", "run", "start:dev"]
